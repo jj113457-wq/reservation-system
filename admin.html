@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 | やました小児科医院 予約システム</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+
+  <!-- ログイン画面 -->
+  <div id="login-screen">
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="login-title">管理者ログイン</div>
+        <div class="login-sub">やました小児科医院 予約管理</div>
+        <form id="login-form">
+          <div class="form-group">
+            <input type="password" class="form-input" id="login-password" placeholder="パスワードを入力">
+          </div>
+          <button type="submit" class="btn btn-primary">ログイン</button>
+          <div class="login-error" id="login-error">パスワードが正しくありません</div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理画面本体 -->
+  <div id="admin-app" style="display:none">
+
+    <!-- ヘッダー -->
+    <div class="admin-header">
+      <h1>やました小児科医院 予約管理</h1>
+    </div>
+
+    <!-- タブ -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="daily" onclick="Admin.switchTab('daily')">日別一覧</button>
+      <button class="admin-tab" data-tab="weekly" onclick="Admin.switchTab('weekly')">週間一覧</button>
+      <button class="admin-tab" data-tab="settings" onclick="Admin.switchTab('settings')">設定</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 日別一覧 -->
+    <!-- ============================================================ -->
+    <div class="admin-content tab-content active" id="tab-daily">
+      <div class="admin-date-nav">
+        <button class="calendar-nav-btn" onclick="Admin.prevDay()">&lt;</button>
+        <span class="admin-date" id="admin-date-label"></span>
+        <button class="calendar-nav-btn" onclick="Admin.nextDay()">&gt;</button>
+      </div>
+
+      <div class="summary-cards" id="daily-summary"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="section-title" style="margin-bottom:0;border:none;padding:0">予約一覧</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm admin-add-btn" onclick="Admin.openAddModal()">＋ 予約追加</button>
+          <button class="btn-sm" onclick="Admin.exportDaily()">CSVダウンロード</button>
+        </div>
+      </div>
+
+      <div class="reservation-list" id="daily-list"></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 週間一覧 -->
+    <!-- ============================================================ -->
+    <div class="admin-content tab-content" id="tab-weekly" style="display:none">
+      <div class="admin-date-nav">
+        <button class="calendar-nav-btn" onclick="Admin.prevWeek()">&lt;</button>
+        <span class="admin-date" id="admin-week-label"></span>
+        <button class="calendar-nav-btn" onclick="Admin.nextWeek()">&gt;</button>
+      </div>
+
+      <div class="weekly-grid" id="weekly-grid"></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 設定 -->
+    <!-- ============================================================ -->
+    <div class="admin-content tab-content" id="tab-settings" style="display:none">
+
+      <div class="settings-section">
+        <div class="settings-title">予約枠上限（1枠あたり）</div>
+        <div class="settings-row">
+          <span class="settings-label">予約上限数</span>
+          <input type="number" class="settings-input" id="cfg-max-per-slot" min="1" max="20">
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="Admin.saveSlotConfig()">枠数を保存</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">臨時休業日の設定</div>
+        <p style="font-size:0.82rem;color:var(--color-sub);margin-bottom:12px">
+          木曜・日曜・祝日以外で臨時休業にする日を設定できます。
+        </p>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:12px">
+          <div class="form-group" style="margin-bottom:0;flex:1">
+            <label class="form-label">休業日を追加</label>
+            <input type="date" class="form-input" id="cfg-closed-date">
+          </div>
+          <button class="btn btn-primary" style="width:auto;padding:10px 20px" onclick="Admin.addClosedDay()">追加</button>
+        </div>
+        <div id="closed-days-list"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">メール通知設定（EmailJS）</div>
+        <div id="email-status-bar" style="margin-bottom:12px"></div>
+
+        <details style="margin-bottom:16px;font-size:0.82rem;color:var(--color-sub)">
+          <summary style="cursor:pointer;font-weight:700;color:var(--color-text);margin-bottom:8px">EmailJS 初期設定の手順（初回のみ）</summary>
+          <ol style="padding-left:20px;line-height:2">
+            <li><a href="https://www.emailjs.com/" target="_blank">emailjs.com</a> で無料アカウントを作成</li>
+            <li>「Email Services」で Gmail 等を接続し <strong>Service ID</strong> を取得</li>
+            <li>「Email Templates」で新規テンプレートを作成し、以下の内容を貼り付けてください:
+              <div style="background:#f5f2f0;padding:10px;border-radius:8px;margin:6px 0;font-size:0.78rem;white-space:pre-wrap;line-height:1.6">件名: 【やました小児科医院】ご予約確認（{{reservation_id}}）
+
+{{furigana}} 様
+
+ご予約を受け付けました。
+
+■ 予約番号: {{reservation_id}}
+■ 予約日時: {{reservation_date}} {{reservation_time}}〜
+■ お子さま: {{child_name}}
+■ 発熱: {{has_fever}}
+■ 症状・備考: {{notes}}
+
+▼ 予約のキャンセルはこちら（予約1時間前まで）
+{{cancel_url}}
+
+直前のキャンセルはお電話ください。
+TEL: {{clinic_phone}}
+
+{{clinic_name}}</div>
+            </li>
+            <li>テンプレートの「To Email」欄に <code>{{to_email}}</code> を設定</li>
+            <li>「Account」→「Public Key」を取得</li>
+            <li>取得した3つのIDを下記に入力して保存</li>
+          </ol>
+        </details>
+
+        <div class="form-group">
+          <label class="form-label">予約ページの公開URL<span class="required">必須</span></label>
+          <input type="url" class="form-input" id="cfg-site-url" placeholder="例: https://yamashita-hospital.jp/reservation/index.html">
+          <div class="form-hint">メールのキャンセルリンクに使用されます。予約ページを公開しているURLを入力してください。</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Service ID<span class="required">必須</span></label>
+          <input type="text" class="form-input" id="cfg-emailjs-service" placeholder="例: service_xxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Template ID<span class="required">必須</span></label>
+          <input type="text" class="form-input" id="cfg-emailjs-template" placeholder="例: template_xxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Public Key<span class="required">必須</span></label>
+          <input type="text" class="form-input" id="cfg-emailjs-key" placeholder="例: XXXXXXXXXXXXXXX">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="Admin.saveEmailConfig()">設定を保存</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="Admin.testEmail()">テストメール送信</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">パスワード変更</div>
+        <div class="form-group">
+          <label class="form-label">現在のパスワード</label>
+          <input type="password" class="form-input" id="cfg-old-pw">
+        </div>
+        <div class="form-group">
+          <label class="form-label">新しいパスワード</label>
+          <input type="password" class="form-input" id="cfg-new-pw">
+        </div>
+        <button class="btn btn-primary" onclick="Admin.changePassword()">パスワードを変更</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">データ管理</div>
+        <p style="font-size:0.82rem;color:var(--color-sub);margin-bottom:12px">
+          全ての予約データを削除します。この操作は取り消せません。
+        </p>
+        <button class="btn btn-danger" onclick="Admin.clearAllData()">全データを削除</button>
+      </div>
+
+      <div style="text-align:center;margin-top:20px">
+        <a href="index.html" style="font-size:0.85rem">患者向け予約ページを開く</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 予約詳細モーダル -->
+  <div class="detail-overlay" id="detail-modal" style="display:none">
+    <div class="detail-card">
+      <button class="detail-close" onclick="Admin.closeDetail()">&times;</button>
+      <div class="section-title" style="margin-top:8px">予約詳細</div>
+      <div id="detail-content"></div>
+      <div class="btn-group" id="detail-actions"></div>
+    </div>
+  </div>
+
+  <!-- 予約追加モーダル -->
+  <div class="detail-overlay" id="add-modal" style="display:none">
+    <div class="detail-card" style="max-width:520px;max-height:90vh;overflow-y:auto">
+      <button class="detail-close" onclick="Admin.closeAddModal()">&times;</button>
+      <div class="section-title" style="margin-top:8px">予約追加（管理者）</div>
+
+      <form id="admin-add-form" novalidate>
+        <!-- 日付選択 -->
+        <div class="form-group">
+          <label class="form-label">予約日<span class="required">必須</span></label>
+          <input type="date" class="form-input" id="add-date" required>
+          <div class="form-error" id="add-err-date">予約日を選択してください</div>
+        </div>
+
+        <!-- 時間枠選択 -->
+        <div class="form-group">
+          <label class="form-label">時間枠<span class="required">必須</span></label>
+          <div id="add-time-slots" class="slot-grid" style="margin-top:4px"></div>
+          <div class="form-error" id="add-err-time">時間枠を選択してください</div>
+        </div>
+
+        <!-- メニュー種別 -->
+        <div class="form-group">
+          <label class="form-label">メニュー<span class="required">必須</span></label>
+          <div class="menu-type-toggle">
+            <button type="button" class="menu-type-btn active" data-type="general" onclick="Admin.setMenuType('general')">診察予約</button>
+            <button type="button" class="menu-type-btn" data-type="custom" onclick="Admin.setMenuType('custom')">別枠メニュー</button>
+          </div>
+          <div id="add-custom-menu-wrap" style="display:none;margin-top:8px">
+            <input type="text" class="form-input" id="add-custom-menu" placeholder="例: 予防接種、健診、アレルギー外来">
+          </div>
+          <div class="form-error" id="add-err-menu">メニュー名を入力してください</div>
+        </div>
+
+        <!-- 患者情報 -->
+        <div class="form-group">
+          <label class="form-label">お子さまのお名前</label>
+          <input type="text" class="form-input" id="add-child-name" placeholder="例: 山田 花子">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ふりがな<span class="required">必須</span></label>
+          <input type="text" class="form-input" id="add-furigana" placeholder="例: やまだ はなこ" required>
+          <div class="form-error" id="add-err-furigana">ふりがなを入力してください</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">生年月日<span class="required">必須</span></label>
+          <input type="date" class="form-input" id="add-birthdate" required>
+          <div class="form-error" id="add-err-birthdate">生年月日を入力してください</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">電話番号<span class="required">必須</span></label>
+          <input type="tel" class="form-input" id="add-phone" placeholder="例: 090-1234-5678" required>
+          <div class="form-error" id="add-err-phone">電話番号を入力してください</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">メールアドレス<span class="required">必須</span></label>
+          <input type="email" class="form-input" id="add-email" placeholder="例: example@email.com" required>
+          <div class="form-error" id="add-err-email">メールアドレスを入力してください</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">診察券番号</label>
+          <input type="text" class="form-input" id="add-card-number" placeholder="お持ちの方はご入力ください">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">発熱の有無<span class="required">必須</span></label>
+          <div class="fever-options">
+            <div class="fever-option">
+              <input type="radio" name="add-fever" id="add-fever-yes" value="yes">
+              <label for="add-fever-yes" class="fever-label fever-yes">あり（37.5℃以上）</label>
+            </div>
+            <div class="fever-option">
+              <input type="radio" name="add-fever" id="add-fever-no" value="no">
+              <label for="add-fever-no" class="fever-label fever-no">なし</label>
+            </div>
+          </div>
+          <div class="form-error" id="add-err-fever">発熱の有無を選択してください</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">症状・ご相談内容</label>
+          <textarea class="form-textarea" id="add-notes" placeholder="気になる症状やご相談内容をご記入ください"></textarea>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="Admin.closeAddModal()">キャンセル</button>
+          <button type="submit" class="btn btn-primary">予約を登録</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

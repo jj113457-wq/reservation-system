@@ -1,0 +1,1311 @@
+/* ============================================================
+   やました小児科医院 予約システム - スタイルシート
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+
+:root {
+  --color-text: #5a4a3a;
+  --color-sub: #8a7a6a;
+  --color-light: #b0a090;
+  --color-bg: #fff9f5;
+  --color-card: #ffffff;
+  --color-border: #e8ddd0;
+  --color-border-light: #f0e8e0;
+  --color-orange: #f0c0a0;
+  --color-orange-light: #fef0e6;
+  --color-blue: #8ab8d8;
+  --color-blue-light: #eef5ff;
+  --color-green: #8bc28b;
+  --color-green-light: #f0f9f0;
+  --color-yellow: #f5c87a;
+  --color-yellow-light: #fffdf5;
+  --color-pink: #f0b0b8;
+  --color-pink-light: #fff5f8;
+  --color-closed: #d8d0c8;
+  --color-danger: #e08080;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --shadow: 0 2px 12px rgba(90, 74, 58, 0.08);
+  --shadow-hover: 0 4px 16px rgba(90, 74, 58, 0.14);
+  --transition: all 0.2s ease;
+}
+
+/* ============================================================
+   リセット & ベース
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic Pro', 'M PLUS Rounded 1c', sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+a { color: var(--color-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ============================================================
+   レイアウト
+   ============================================================ */
+
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.header {
+  text-align: center;
+  padding: 20px 16px 12px;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.header-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.header-sub {
+  font-size: 0.82rem;
+  color: var(--color-sub);
+}
+
+.header-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--color-sub);
+}
+
+/* ============================================================
+   ステップインジケーター
+   ============================================================ */
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 0 8px;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: var(--transition);
+}
+
+.step-dot.active {
+  background: var(--color-orange);
+  transform: scale(1.2);
+}
+
+.step-dot.done {
+  background: var(--color-green);
+}
+
+.step-label {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--color-sub);
+  padding-bottom: 12px;
+}
+
+/* ============================================================
+   カレンダー
+   ============================================================ */
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 1rem;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.calendar-nav-btn:hover {
+  background: var(--color-orange-light);
+  border-color: var(--color-orange);
+}
+
+.calendar-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.calendar-month {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.calendar-dow {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 0;
+  color: var(--color-sub);
+}
+
+.calendar-dow:first-child { color: var(--color-danger); }
+.calendar-dow:last-child { color: var(--color-blue); }
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.calendar-day:hover:not(.closed):not(.past):not(.empty) {
+  background: var(--color-orange-light);
+  border-color: var(--color-orange);
+}
+
+.calendar-day.today {
+  font-weight: 700;
+  background: var(--color-yellow-light);
+}
+
+.calendar-day.today::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  position: absolute;
+  bottom: 4px;
+}
+
+.calendar-day.closed {
+  color: var(--color-closed);
+  cursor: default;
+  background: #f8f5f2;
+}
+
+.calendar-day.closed .day-label {
+  font-size: 0.55rem;
+  color: var(--color-closed);
+}
+
+.calendar-day.past {
+  color: var(--color-closed);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.calendar-day.selected {
+  background: var(--color-orange);
+  color: white;
+  font-weight: 700;
+  border-color: var(--color-orange);
+}
+
+.calendar-day.selected::after { display: none; }
+
+.calendar-day.empty {
+  cursor: default;
+}
+
+.calendar-day.sunday { color: var(--color-danger); }
+.calendar-day.saturday { color: var(--color-blue); }
+.calendar-day.closed.sunday,
+.calendar-day.closed.saturday { opacity: 0.6; }
+
+.calendar-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--color-sub);
+  padding: 8px 0 4px;
+}
+
+.calendar-legend span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ============================================================
+   メニューカード
+   ============================================================ */
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.menu-card {
+  background: var(--color-card);
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius);
+  padding: 20px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+}
+
+.menu-card:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.menu-card.selected {
+  border-width: 3px;
+}
+
+.menu-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.menu-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.menu-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.menu-desc {
+  font-size: 0.72rem;
+  color: var(--color-sub);
+  line-height: 1.4;
+}
+
+/* ============================================================
+   時間枠
+   ============================================================ */
+
+.time-block {
+  margin-bottom: 20px;
+}
+
+.time-block-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-sub);
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-sm);
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.slot-btn {
+  padding: 10px 4px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-card);
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.slot-btn:hover:not(.full):not(.selected) {
+  border-color: var(--color-orange);
+  background: var(--color-orange-light);
+}
+
+.slot-btn.selected {
+  background: var(--color-orange);
+  border-color: var(--color-orange);
+  color: white;
+  font-weight: 700;
+}
+
+.slot-btn.full {
+  background: #f5f2f0;
+  border-color: #e8e4e0;
+  color: var(--color-closed);
+  cursor: not-allowed;
+}
+
+.slot-remaining {
+  font-size: 0.6rem;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   フォーム
+   ============================================================ */
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--color-text);
+}
+
+.form-label .required {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-card);
+  transition: var(--transition);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-orange);
+  box-shadow: 0 0 0 3px rgba(240, 192, 160, 0.3);
+}
+
+.form-input.error,
+.form-textarea.error {
+  border-color: var(--color-danger);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-hint {
+  font-size: 0.72rem;
+  color: var(--color-sub);
+  margin-top: 3px;
+}
+
+.form-error {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  margin-top: 3px;
+  display: none;
+}
+
+.form-error.show {
+  display: block;
+}
+
+/* ============================================================
+   ボタン
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.btn-primary {
+  background: var(--color-orange);
+  color: white;
+  box-shadow: 0 2px 8px rgba(240, 192, 160, 0.4);
+}
+
+.btn-primary:hover {
+  background: #e8b090;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(240, 192, 160, 0.5);
+}
+
+.btn-secondary {
+  background: var(--color-card);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-orange-light);
+  border-color: var(--color-orange);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #d07070;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--color-sub);
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-back:hover {
+  color: var(--color-text);
+}
+
+/* ============================================================
+   確認画面・完了画面
+   ============================================================ */
+
+.confirm-card {
+  background: var(--color-card);
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.confirm-row {
+  display: flex;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: 0.9rem;
+}
+
+.confirm-row:last-child {
+  border-bottom: none;
+}
+
+.confirm-label {
+  width: 110px;
+  flex-shrink: 0;
+  color: var(--color-sub);
+  font-weight: 500;
+}
+
+.confirm-value {
+  flex: 1;
+  font-weight: 500;
+}
+
+.complete-icon {
+  text-align: center;
+  font-size: 3rem;
+  margin: 24px 0 12px;
+}
+
+.complete-title {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.complete-sub {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-sub);
+  margin-bottom: 20px;
+}
+
+.reservation-number {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-orange);
+  letter-spacing: 2px;
+  padding: 12px;
+  background: var(--color-orange-light);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+
+/* ============================================================
+   メニューバッジ
+   ============================================================ */
+
+.menu-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: white;
+}
+
+.menu-badge.general { background: var(--color-orange); }
+.menu-badge.custom { background: var(--color-blue); }
+
+/* ============================================================
+   カード・セクション
+   ============================================================ */
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed var(--color-border-light);
+}
+
+.info-bar {
+  background: var(--color-orange-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notice-bar {
+  background: var(--color-yellow-light);
+  border: 1px solid var(--color-yellow);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  color: var(--color-sub);
+  margin: 12px 0;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   管理画面
+   ============================================================ */
+
+.admin-header {
+  background: var(--color-text);
+  color: white;
+  padding: 16px;
+  text-align: center;
+}
+
+.admin-header h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.admin-tabs {
+  display: flex;
+  background: var(--color-card);
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-sub);
+  border-bottom: 3px solid transparent;
+  transition: var(--transition);
+}
+
+.admin-tab.active {
+  color: var(--color-orange);
+  border-bottom-color: var(--color-orange);
+}
+
+.admin-tab:hover:not(.active) {
+  color: var(--color-text);
+  background: var(--color-orange-light);
+}
+
+.admin-content {
+  padding: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.admin-date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-date {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--color-border);
+}
+
+.summary-card .count {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.summary-card .label {
+  font-size: 0.72rem;
+  color: var(--color-sub);
+}
+
+.reservation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reservation-row {
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--transition);
+}
+
+.reservation-row:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.reservation-row.cancelled {
+  opacity: 0.5;
+  background: #f8f5f2;
+}
+
+.reservation-time {
+  font-size: 1rem;
+  font-weight: 700;
+  min-width: 50px;
+}
+
+.reservation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.reservation-patient {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.reservation-child {
+  font-size: 0.75rem;
+  color: var(--color-sub);
+}
+
+.reservation-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.btn-sm:hover {
+  background: var(--color-orange-light);
+}
+
+.btn-sm.cancel {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.btn-sm.cancel:hover {
+  background: #fef0f0;
+}
+
+.status-badge {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.status-badge.confirmed {
+  background: var(--color-green-light);
+  color: var(--color-green);
+}
+
+.status-badge.cancelled {
+  background: #f5f0f0;
+  color: var(--color-closed);
+}
+
+/* 週間ビュー */
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.weekly-day {
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.weekly-day:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.weekly-day.closed {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.weekly-day.closed:hover {
+  transform: none;
+  box-shadow: var(--shadow);
+}
+
+.weekly-day-date {
+  font-size: 0.78rem;
+  color: var(--color-sub);
+}
+
+.weekly-day-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.weekly-day-count {
+  font-size: 0.72rem;
+  color: var(--color-sub);
+  margin-top: 4px;
+}
+
+.weekly-day-bars {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 6px;
+  height: 4px;
+}
+
+.weekly-bar {
+  flex: 1;
+  max-width: 16px;
+  border-radius: 2px;
+  height: 4px;
+}
+
+/* ログイン画面 */
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: 40px 30px;
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.login-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.login-sub {
+  font-size: 0.82rem;
+  color: var(--color-sub);
+  margin-bottom: 24px;
+}
+
+.login-error {
+  color: var(--color-danger);
+  font-size: 0.82rem;
+  margin-top: 8px;
+  display: none;
+}
+
+/* 設定画面 */
+.settings-section {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.settings-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.settings-label {
+  font-size: 0.85rem;
+}
+
+.settings-input {
+  width: 60px;
+  padding: 6px 8px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  text-align: center;
+  font-family: inherit;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--color-orange);
+}
+
+/* 空状態 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-sub);
+}
+
+.empty-state-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.empty-state-text {
+  font-size: 0.9rem;
+}
+
+/* 予約詳細モーダル */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(90, 74, 58, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.detail-card {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(90, 74, 58, 0.2);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.detail-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--color-sub);
+  padding: 4px;
+}
+
+/* ============================================================
+   ステップ表示制御
+   ============================================================ */
+
+.step { display: none; }
+.step.active { display: block; }
+
+/* ============================================================
+   フッター
+   ============================================================ */
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.72rem;
+  color: var(--color-light);
+  border-top: 1px solid var(--color-border-light);
+  margin-top: 24px;
+}
+
+/* ============================================================
+   印刷用スタイル
+   ============================================================ */
+
+@media print {
+  body { background: white; }
+  .header, .step-indicator, .step-label,
+  .btn-group, .btn-back, .footer, .notice-bar,
+  .no-print { display: none !important; }
+  .container { max-width: 100%; padding: 0; }
+  .step { display: none !important; }
+  .step.print-target { display: block !important; }
+  .confirm-card { box-shadow: none; border: 1px solid #ccc; }
+  .reservation-number { background: white; border: 2px solid #ccc; }
+}
+
+/* ============================================================
+   レスポンシブ
+   ============================================================ */
+
+/* ============================================================
+   アラートバナー（ワクチン・血液検査）
+   ============================================================ */
+
+.alert-banner {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.alert-banner-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.alert-banner.vaccine {
+  background: var(--color-pink-light);
+  border: 2px solid var(--color-pink);
+  color: #9a5060;
+}
+
+.alert-banner.blood {
+  background: var(--color-blue-light);
+  border: 2px solid var(--color-blue);
+  color: #4a7090;
+  font-weight: 500;
+}
+
+/* ============================================================
+   発熱ラジオボタン
+   ============================================================ */
+
+.fever-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.fever-option {
+  flex: 1;
+}
+
+.fever-option input[type="radio"] {
+  display: none;
+}
+
+.fever-label {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.fever-label:hover {
+  border-color: var(--color-orange);
+  background: var(--color-orange-light);
+}
+
+.fever-option input[type="radio"]:checked + .fever-label.fever-yes {
+  background: #fce8e8;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.fever-option input[type="radio"]:checked + .fever-label.fever-no {
+  background: var(--color-green-light);
+  border-color: var(--color-green);
+  color: #5a8a5a;
+}
+
+/* ============================================================
+   キャンセル画面
+   ============================================================ */
+
+.cancel-screen {
+  text-align: center;
+  padding: 30px 0;
+}
+
+.cancel-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.cancel-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.cancel-message {
+  font-size: 0.88rem;
+  color: var(--color-sub);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.phone-link {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--color-green-light);
+  border-radius: var(--radius);
+  color: #5a8a5a;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   閉診・受付時間外画面
+   ============================================================ */
+
+.closed-screen {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.closed-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.closed-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.closed-message {
+  font-size: 0.9rem;
+  color: var(--color-sub);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   管理者: 予約追加フォーム
+   ============================================================ */
+
+.admin-add-btn {
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: 2px solid var(--color-orange);
+  background: var(--color-orange-light);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.admin-add-btn:hover {
+  background: var(--color-orange);
+  color: white;
+}
+
+.menu-type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.menu-type-btn {
+  flex: 1;
+  padding: 8px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-card);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.menu-type-btn.active {
+  border-color: var(--color-orange);
+  background: var(--color-orange-light);
+}
+
+.settings-input.wide {
+  width: 100%;
+  text-align: left;
+}
+
+/* 休業日タグ */
+.closed-day-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--color-pink-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+
+.closed-day-tag.past {
+  opacity: 0.5;
+  background: #f5f2f0;
+}
+
+.closed-day-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--color-danger);
+  padding: 0 2px;
+  line-height: 1;
+}
+
+/* ============================================================
+   レスポンシブ
+   ============================================================ */
+
+@media (min-width: 768px) {
+  .container { max-width: 560px; padding: 20px; }
+  .slot-grid { grid-template-columns: repeat(4, 1fr); }
+  .admin-content { padding: 24px; }
+}
